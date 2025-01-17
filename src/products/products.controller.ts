@@ -1,8 +1,7 @@
 import { BadRequestException, Body, Controller, Delete, Get, Inject, Param, Patch, Post, Query } from '@nestjs/common';
-import { ClientProxy } from '@nestjs/microservices';
+import { ClientProxy, RpcException } from '@nestjs/microservices';
 import { firstValueFrom, Observable } from 'rxjs';
-import { PaginationDto } from 'src/common';
-import { Product } from 'src/common/entities';
+import { PaginationDto, Product } from 'src/common';
 
 @Controller('products')
 export class ProductsController {
@@ -34,7 +33,7 @@ export class ProductsController {
             return product;
 
         } catch (error) {
-            throw new BadRequestException(error);
+            throw new RpcException(error);
         }
     }
 
