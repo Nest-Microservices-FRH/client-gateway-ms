@@ -1,5 +1,6 @@
-import { Body, Controller, Delete, Get, Inject, Param, Patch, Post, Query } from '@nestjs/common';
+import { BadRequestException, Body, Controller, Delete, Get, Inject, Param, Patch, Post, Query } from '@nestjs/common';
 import { ClientProxy } from '@nestjs/microservices';
+import { firstValueFrom } from 'rxjs';
 import { PaginationDto } from 'src/common';
 
 @Controller('products')
@@ -21,10 +22,19 @@ export class ProductsController {
     }
 
     @Get(':id')
-    findOne(
+    async findOne(
       @Param('id') id: string,
-    ): string {
-        return `This action returns a #${id} product`;
+    ): Promise<any> {
+        try {
+            const product = await firstValueFrom(
+                this.productsClient.send({ cmd: 'find_one_product' }, { id }),
+            );
+
+            return product;
+
+        } catch (error) {
+            throw new BadRequestException(error);
+        }
     }
 
     @Delete(':id')
