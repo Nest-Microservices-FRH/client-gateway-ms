@@ -1,7 +1,7 @@
-import { BadRequestException, Body, Controller, Delete, Get, Inject, Param, Patch, Post, Query } from '@nestjs/common';
+import { BadRequestException, Body, Controller, Delete, Get, Inject, Param, ParseIntPipe, Patch, Post, Query } from '@nestjs/common';
 import { ClientProxy, RpcException } from '@nestjs/microservices';
 import { catchError, firstValueFrom, Observable } from 'rxjs';
-import { PaginationDto, Product } from 'src/common';
+import { CreateProductDto, PaginationDto, Product, UpdateProductDto } from 'src/common';
 
 @Controller('products')
 export class ProductsController {
@@ -10,8 +10,10 @@ export class ProductsController {
     ) {}
 
     @Post()
-    createProduct(): string {
-        return 'This action adds a new product';
+    async createProduct(
+      @Body() body: CreateProductDto,
+    ): Promise<Observable<Product>> {
+        return await this.productsClient.send({ cmd: 'create_product' }, body);
     }
 
     @Get()
@@ -46,16 +48,16 @@ export class ProductsController {
 
     @Delete(':id')
     deleteProduct(
-      @Param('id') id: string,
-    ): string {
-        return `This action removes a #${id} product`;
+      @Param('id', ParseIntPipe) id: number,
+    ): Observable<Product> {
+        return this.productsClient.send({ cmd: 'delete_product' }, { id });
     }
 
     @Patch(':id')
-    patchProduct(
-      @Body() body: any,
-      @Param('id') id: string,
-    ): string {
-        return `This action updates a #${id} product`;
+    async patchProduct(
+      @Body() body: UpdateProductDto,
+      @Param('id', ParseIntPipe) id: number,
+    ): Promise<Observable<Product>> {
+        return this.productsClient.send({ cmd: 'update_product' },{ id, ...body });
     }
 }
