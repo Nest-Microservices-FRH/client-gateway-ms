@@ -54,10 +54,17 @@ export class ProductsController {
     }
 
     @Patch(':id')
-    async patchProduct(
+    patchProduct(
       @Body() body: UpdateProductDto,
       @Param('id', ParseIntPipe) id: number,
-    ): Promise<Observable<Product>> {
-        return this.productsClient.send({ cmd: 'update_product' },{ id, ...body });
+    ): Observable<Product> {
+        return this.productsClient.send({ cmd: 'update_product' },{
+            id,
+            ...body,
+        }).pipe(
+            catchError( err => {
+                throw new RpcException(err);
+            }),
+        );
     }
 }
