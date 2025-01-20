@@ -1,6 +1,6 @@
-import { BadRequestException, Body, Controller, Delete, Get, Inject, Param, ParseIntPipe, Patch, Post, Query } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Inject, Param, ParseIntPipe, Patch, Post, Query } from '@nestjs/common';
 import { ClientProxy, RpcException } from '@nestjs/microservices';
-import { catchError, firstValueFrom, Observable } from 'rxjs';
+import { catchError, Observable } from 'rxjs';
 import { CreateProductDto, PaginationDto, Product, UpdateProductDto } from 'src/common';
 
 @Controller('products')
@@ -10,10 +10,10 @@ export class ProductsController {
     ) {}
 
     @Post()
-    async createProduct(
+    createProduct(
       @Body() body: CreateProductDto,
-    ): Promise<Observable<Product>> {
-        return await this.productsClient.send({ cmd: 'create_product' }, body);
+    ): Observable<Product> {
+        return this.productsClient.send({ cmd: 'create_product' }, body);
     }
 
     @Get()
@@ -24,9 +24,9 @@ export class ProductsController {
     }
 
     @Get(':id')
-    async findOne(
+    findOne(
       @Param('id') id: string,
-    ): Promise<Observable<Product>> {
+    ): Observable<Product> {
         return this.productsClient.send({ cmd: 'find_one_product' }, { id })
             .pipe(
                 catchError( err => {
