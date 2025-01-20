@@ -50,7 +50,12 @@ export class ProductsController {
     deleteProduct(
       @Param('id', ParseIntPipe) id: number,
     ): Observable<Product> {
-        return this.productsClient.send({ cmd: 'delete_product' }, { id });
+        return this.productsClient.send({ cmd: 'delete_product' }, { id })
+            .pipe(
+                catchError( err => {
+                    throw new RpcException(err);
+                }),
+            );
     }
 
     @Patch(':id')
