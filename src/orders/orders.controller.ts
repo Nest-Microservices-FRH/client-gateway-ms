@@ -1,6 +1,8 @@
-import { Controller, Get, Post, Body, Param, Inject } from '@nestjs/common';
+import { Controller, Get, Post, Body, Param, Inject, ParseUUIDPipe } from '@nestjs/common';
 import { CreateOrderDto } from './dto/create-order.dto';
-import { ClientProxy } from '@nestjs/microservices';
+import { ClientProxy, RpcException } from '@nestjs/microservices';
+import { catchError, Observable } from 'rxjs';
+import { Order } from './entities/order.entity';
 
 @Controller('orders')
 export class OrdersController {
@@ -9,7 +11,7 @@ export class OrdersController {
     ) {}
 
   @Post()
-    create(@Body() createOrderDto: CreateOrderDto): any {
+    create(@Body() createOrderDto: CreateOrderDto): Observable<Order> {
         return this.ordersClient.send('createOrder', createOrderDto);
     }
 
@@ -19,7 +21,12 @@ export class OrdersController {
   }
 
   @Get(':id')
-  findOne(@Param('id') id: string) {
-      return this.ordersClient.send('findOneOrder', +id);
+  findOne(@Param('id', ParseUUIDPipe) id: string): Observable<Order> {
+      return this.ordersClient.send('findOneOrder', { id })
+          .pipe(
+              catchError( err => {
+                  throw new RpcException(err);
+              }),
+          );
   }
 }
