@@ -9,7 +9,7 @@ export class OrdersController {
     ) {}
 
   @Post()
-    create(@Body() createOrderDto: CreateOrderDto) {
+    create(@Body() createOrderDto: CreateOrderDto): any {
         return this.ordersClient.send('createOrder', createOrderDto);
     }
 
